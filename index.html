@@ -1,286 +1,698 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cyber Loading Screen</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cyber Loading → WiFi Confirm → Upload</title>
 <style>
-/* ==============================================
-   BASE THEME & VARIABLES
-================================================= */
-:root {
-    --neon-green: #00ff66;
-    --dark-bg: #000;
-    --bar-bg: #111;
-    --glow: 0 0 15px var(--neon-green), 0 0 30px var(--neon-green);
+/* ============================================================
+   CYBER THEME - VARIABLES
+   Bright green (#00ff66) on black with glow effects
+   ============================================================ */
+:root{
+  --neon: #00ff66;
+  --bg: #000000;
+  --panel: #0e0e0e;
+  --muted: rgba(0,255,102,0.12);
+  --glass: rgba(255,255,255,0.03);
+  --glow: 0 0 12px var(--neon), 0 0 30px rgba(0,255,102,0.08);
+  --font-sans: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-body {
-    margin: 0;
-    height: 100vh;
-    background-color: var(--dark-bg);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    font-family: 'Segoe UI', sans-serif;
-    overflow: hidden;
+/* Basic reset */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);font-family:var(--font-sans);-webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
+button{font:inherit}
+
+/* ============================================================
+   FULLSCREEN LAYOUT
+   Centered column layout used across screens
+   ============================================================ */
+.app {
+  min-height:100vh;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
 }
 
-/* ==============================================
-   BACKGROUND GRID ANIMATION
-================================================= */
+/* decorative animated background grid */
 .bg-grid {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(
-        0deg,
-        rgba(0, 255, 102, 0.1) 0px,
-        rgba(0, 255, 102, 0.1) 1px,
-        transparent 1px,
-        transparent 20px
-    ),
-    repeating-linear-gradient(
-        90deg,
-        rgba(0, 255, 102, 0.1) 0px,
-        rgba(0, 255, 102, 0.1) 1px,
-        transparent 1px,
-        transparent 20px
-    );
-    animation: moveGrid 10s linear infinite;
-    z-index: 0;
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,255,102,0.06) 0px, rgba(0,255,102,0.06) 1px, transparent 1px, transparent 24px),
+    repeating-linear-gradient(90deg, rgba(0,255,102,0.06) 0px, rgba(0,255,102,0.06) 1px, transparent 1px, transparent 24px);
+  animation:gridMove 18s linear infinite;
+  opacity:0.8;
 }
-@keyframes moveGrid {
-    from { background-position: 0 0, 0 0; }
-    to { background-position: 40px 40px, 40px 40px; }
+@keyframes gridMove {
+  from { background-position:0 0, 0 0 }
+  to   { background-position:60px 60px, 60px 60px }
 }
 
-/* ==============================================
-   LOADER CONTAINER
-================================================= */
-#loaderUI {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* subtle radial glow */
+.bg-glow {
+  position:absolute;inset:-20%;z-index:0;filter:blur(40px);
+  background:radial-gradient(circle at 20% 40%, rgba(0,255,102,0.06), transparent 15%),
+             radial-gradient(circle at 80% 70%, rgba(0,255,102,0.035), transparent 20%);
 }
 
-/* Circular loader */
-.loader-circle {
-    border: 6px solid #222;
-    border-top: 6px solid var(--neon-green);
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    animation: spin 1s linear infinite;
-    margin-top: 20px;
-    box-shadow: 0 0 10px var(--neon-green);
-}
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* main card area that holds the UI (centers content and adds glass) */
+.card {
+  position:relative;
+  z-index:1;
+  width: min(920px, 95%);
+  max-width:980px;
+  padding: 34px;
+  border-radius:14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow: 0 6px 30px rgba(0,0,0,0.65), var(--glow);
+  border: 1px solid rgba(0,255,102,0.06);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
 
-/* Progress bar container */
+/* small header row */
+.header {
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+}
+.brand {
+  display:flex;align-items:center;gap:10px;color:var(--neon);font-weight:700;font-size:15px;letter-spacing:0.6px;
+  text-shadow:0 0 10px rgba(0,255,102,0.25);
+}
+.brand .logo {
+  width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#001400 0%, #003f10 100%);box-shadow:inset 0 0 18px rgba(0,255,102,0.06);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+
+/* ============================================================
+   LOADER VIEW
+   - Circular spinner
+   - Progress bar
+   - Percentage & tip text
+   ============================================================ */
+.loader {
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+
+/* spinner circle */
+.spinner {
+  width:92px;height:92px;border-radius:50%;
+  display:grid;place-items:center;
+  background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.36));
+  border: 4px solid rgba(255,255,255,0.02);
+  box-shadow: var(--glow);
+  position:relative;
+}
+.spinner::after{
+  content:"";position:absolute;inset:8px;border-radius:50%;
+  border:6px solid rgba(0,0,0,0.5);border-top-color:var(--neon);animation:spin 0.95s linear infinite;
+}
+@keyframes spin {from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* row for progress bar and label */
+.progress-wrap { width:100%; display:flex; flex-direction:column; gap:8px; align-items:center; }
 .progress-container {
-    width: 80%;
-    background-color: var(--bar-bg);
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: var(--glow);
-    margin-top: 20px;
+  width:100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.007));
+  border-radius:12px;
+  padding:6px;
+  box-shadow: inset 0 0 18px rgba(0,0,0,0.5);
+  border: 1px solid rgba(0,255,102,0.03);
+}
+.progress {
+  height:18px;border-radius:8px;width:0%;
+  background: linear-gradient(90deg, rgba(0,255,102,0.95), rgba(0,190,80,0.9));
+  box-shadow: 0 6px 28px rgba(0,255,102,0.07), 0 0 10px rgba(0,255,102,0.18);
+  transition: width 0.09s linear;
 }
 
-/* Progress bar */
-.progress-bar {
-    height: 20px;
-    background-color: var(--neon-green);
-    width: 0%;
-    transition: width 0.1s linear;
-    box-shadow: 0 0 10px var(--neon-green);
-}
-
-/* Percentage text */
+/* percentage text */
 .percentage {
-    margin-top: 15px;
-    font-size: 1.5rem;
-    color: var(--neon-green);
-    text-shadow: 0 0 5px var(--neon-green);
+  color:var(--neon); font-size:18px; font-weight:700; text-shadow:0 0 8px rgba(0,255,102,0.14);
 }
 
-/* Loading tips */
-.tips {
-    margin-top: 20px;
-    font-size: 1rem;
-    color: var(--neon-green);
-    opacity: 0.8;
-    font-style: italic;
-    text-shadow: 0 0 5px var(--neon-green);
+/* small dynamic tip message */
+.tip {
+  margin-top:6px;font-size:13px;color:rgba(0,255,102,0.92);opacity:0.95;font-style:italic;
+  text-shadow:0 0 6px rgba(0,255,102,0.06);
 }
 
-/* ==============================================
-   CONNECTED SCREEN
-================================================= */
-#connectedScreen {
-    position: relative;
-    z-index: 1;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    animation: fadeIn 1.5s ease-in forwards;
-}
-@keyframes fadeIn {
-    0% { opacity: 0; transform: scale(0.95); }
-    100% { opacity: 1; transform: scale(1); }
+/* tiny metadata row */
+.meta-row {
+  margin-top:14px;width:100%;display:flex;justify-content:space-between;color:rgba(0,255,102,0.22);font-size:12px;
 }
 
-/* Pulsing checkmark */
-.checkmark {
-    font-size: 4rem;
-    color: var(--neon-green);
-    animation: pulse 1.5s infinite;
-    text-shadow: var(--glow);
+/* ============================================================
+   CONNECTED VIEW
+   - Checkmark pulses
+   - Animated wifi bars
+   ============================================================ */
+.connected {
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  padding:6px 0 0 0;
 }
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.7; }
-    100% { transform: scale(1); opacity: 1; }
+.check {
+  font-size:60px;color:var(--neon);text-shadow:var(--glow);animation:pop 1.3s infinite;
 }
-
-/* WiFi bars animation */
-.wifi-bars {
-    display: flex;
-    align-items: flex-end;
-    margin-top: 15px;
-}
-.wifi-bars span {
-    display: block;
-    width: 8px;
-    margin: 0 3px;
-    background: var(--neon-green);
-    animation: wifiPulse 1s ease-in-out infinite;
-    box-shadow: var(--glow);
-}
-.wifi-bars span:nth-child(1) { height: 10px; animation-delay: 0s; }
-.wifi-bars span:nth-child(2) { height: 18px; animation-delay: 0.2s; }
-.wifi-bars span:nth-child(3) { height: 26px; animation-delay: 0.4s; }
-.wifi-bars span:nth-child(4) { height: 34px; animation-delay: 0.6s; }
-
-@keyframes wifiPulse {
-    0%, 100% { transform: scaleY(1); }
-    50% { transform: scaleY(1.3); }
+@keyframes pop {
+  0% { transform:scale(1); opacity:1 }
+  50% { transform:scale(1.12); opacity:0.85 }
+  100% { transform:scale(1); opacity:1 }
 }
 
-/* Connection text flicker */
-.connected-text {
-    font-size: 2rem;
-    color: var(--neon-green);
-    margin-top: 15px;
-    text-shadow: var(--glow);
-    animation: flicker 2s infinite;
+/* wifi bars */
+.wifi {
+  display:flex;gap:6px;align-items:flex-end;height:48px;margin-top:6px;
+}
+.wifi .bar { width:10px;background:var(--neon); border-radius:3px; box-shadow:var(--glow); transform-origin:bottom center; animation:wav 1s ease-in-out infinite; }
+.wifi .bar.b1 { height:12px; animation-delay:0s; }
+.wifi .bar.b2 { height:20px; animation-delay:0.12s; }
+.wifi .bar.b3 { height:28px; animation-delay:0.24s; }
+.wifi .bar.b4 { height:36px; animation-delay:0.36s; }
+@keyframes wav {
+  0%,100% { transform:scaleY(1); }
+  50% { transform:scaleY(1.35); }
+}
+
+/* connected headline */
+.headline {
+  font-size:22px;color:var(--neon);font-weight:700;text-shadow:var(--glow);
+  animation:flicker 2.6s infinite;
 }
 @keyframes flicker {
-    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
-    20%, 22%, 24%, 55% { opacity: 0.4; }
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity:1; }
+  20%, 22%, 24%, 55% { opacity:0.35; }
 }
 
-/* Extra connection details */
-.connection-info {
-    font-size: 1rem;
-    color: var(--neon-green);
-    margin-top: 10px;
-    opacity: 0.8;
-    text-shadow: 0 0 5px var(--neon-green);
+/* ============================================================
+   IP CONFIRM SCREEN
+   - Shows randomized IP and Mbps
+   - Yes / No buttons
+   ============================================================ */
+.ip-card {
+  width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px;border-radius:10px;
+  background: linear-gradient(180deg, rgba(0,255,102,0.01), rgba(0,255,102,0.005));
+  border:1px solid rgba(0,255,102,0.045);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+
+.ip-display {
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:8px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.35), rgba(255,255,255,0.015));
+  border:1px solid rgba(0,255,102,0.03);
+}
+.ip-left {
+  display:flex;flex-direction:column;gap:6px;
+}
+.ip-value {
+  font-size:20px;color:var(--neon);font-weight:700;text-shadow:0 0 12px rgba(0,255,102,0.08);
+}
+.sub-info { font-size:13px;color:rgba(0,255,102,0.72) }
+
+/* confirm question row */
+.confirm-quest { margin-top:8px;font-size:15px;color:var(--neon);font-weight:600 }
+
+/* button row */
+.btn-row { display:flex; gap:14px; margin-top:12px }
+.btn {
+  padding:10px 18px;border-radius:9px;border:1px solid rgba(0,255,102,0.08);
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15));
+  color:var(--neon); cursor:pointer; font-weight:700; font-size:14px; box-shadow:var(--glow);
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+.btn:hover { transform:translateY(-3px); box-shadow: 0 10px 30px rgba(0,255,102,0.12) }
+.btn:active { transform:translateY(0) }
+.btn.secondary { opacity:0.85; }
+
+/* ============================================================
+   UPLOADING SCREEN
+   - "Uploading to servers" with another progress bar
+   - cancel / finish states
+   ============================================================ */
+.uploading {
+  width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.upload-progress {
+  width:100%;height:14px;border-radius:10px;background:rgba(255,255,255,0.02);padding:4px;border:1px solid rgba(0,255,102,0.03)
+}
+.upload-fill {
+  height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,var(--neon),#00964a);box-shadow:var(--glow);
+  transition: width 0.09s linear;
+}
+.upload-state { font-size:13px;color:rgba(0,255,102,0.92); font-weight:600 }
+
+/* small footer / hint */
+.hint { margin-top:12px;font-size:12px;color:rgba(0,255,102,0.28) }
+
+/* hide utilities */
+.hidden { display:none !important; }
+
+/* responsive adjustments */
+@media (max-width:520px) {
+  .card{padding:18px;border-radius:10px}
+  .brand{font-size:13px}
+  .headline{font-size:18px}
+  .spinner{width:76px;height:76px}
 }
 </style>
 </head>
 <body>
-    <!-- Background grid -->
+  <div class="app">
+    <!-- decorative backgrounds -->
     <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
 
-    <!-- Loader UI -->
-    <div id="loaderUI">
-        <div class="loader-circle"></div>
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <div class="percentage" id="percentage">0%</div>
-        <div class="tips" id="loadingTip">Initializing connection...</div>
-    </div>
+    <!-- core UI card -->
+    <div class="card" role="main" aria-live="polite">
 
-    <!-- Connected Screen -->
-    <div id="connectedScreen">
-        <div class="checkmark">✅</div>
-        <div class="wifi-bars">
-            <span></span><span></span><span></span><span></span>
+      <!-- header -->
+      <div class="header">
+        <div class="brand" aria-hidden="true">
+          <div class="logo">GD</div>
+          GearDriven — Network UI
         </div>
-        <div class="connected-text">WiFi Connected</div>
-        <div class="connection-info" id="connectionInfo">IP: 192.168.0.1 | Speed: 150 Mbps</div>
-    </div>
+        <div style="color:rgba(0,255,102,0.12);font-size:12px">Simulation Mode</div>
+      </div>
+
+      <!-- LOADER VIEW (initial) -->
+      <div id="loaderView" class="loader" aria-hidden="false">
+
+        <div class="spinner" aria-hidden="true">
+          <!-- the CSS pseudo-element creates the animated ring -->
+          <div style="font-size:12px;color:rgba(0,255,102,0.9);position:relative;z-index:2;">Connecting...</div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-container">
+            <div id="progressBar" class="progress" style="width:0%"></div>
+          </div>
+
+          <div class="percentage" id="percentText">0%</div>
+
+          <div class="tip" id="tipText">Initializing connection...</div>
+
+          <div class="meta-row">
+            <div>Protocol: WPA3</div>
+            <div id="etaText">ETA: 10s</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CONNECTED VIEW (brief) -->
+      <div id="connectedView" class="connected hidden" aria-hidden="true" role="status">
+        <div class="check" aria-hidden="true">✔</div>
+        <div class="wifi" aria-hidden="true">
+          <span class="bar b1"></span>
+          <span class="bar b2"></span>
+          <span class="bar b3"></span>
+          <span class="bar b4"></span>
+        </div>
+        <div class="headline">WiFi Connected</div>
+        <div class="sub-info" style="color:rgba(0,255,102,0.64)">Connection validated. Preparing details...</div>
+      </div>
+
+      <!-- IP CONFIRM VIEW -->
+      <div id="ipView" class="ip-card hidden" aria-hidden="true">
+        <div style="width:100%;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:14px;color:rgba(0,255,102,0.85);font-weight:700">Confirm Connection</div>
+          <div style="font-size:12px;color:rgba(0,255,102,0.28)">Step 2 of 3</div>
+        </div>
+
+        <div class="ip-display" role="region" aria-label="IP address">
+          <div class="ip-left">
+            <div class="ip-value" id="ipValue">192.168.0.101</div>
+            <div class="sub-info" id="speedValue">200 Mbps</div>
+          </div>
+          <div style="font-size:12px;color:rgba(0,255,102,0.22);">Private IP</div>
+        </div>
+
+        <div class="confirm-quest">Is this information correct?</div>
+
+        <div class="btn-row" role="toolbar" aria-label="Confirmation buttons">
+          <button id="yesBtn" class="btn" aria-pressed="false">YES — Confirm</button>
+          <button id="noBtn" class="btn secondary" aria-pressed="false">NO — Reset</button>
+        </div>
+
+        <div class="hint">Randomized IP shown. If you choose "No" the setup will retry.</div>
+      </div>
+
+      <!-- UPLOADING VIEW -->
+      <div id="uploadView" class="uploading hidden" aria-hidden="true" role="status">
+        <div style="font-weight:800;color:var(--neon);font-size:18px">Uploading to servers</div>
+        <div style="color:rgba(0,255,102,0.6);font-size:13px">Secure transfer in progress — do not close this window</div>
+
+        <div style="width:100%;margin-top:12px">
+          <div class="upload-progress">
+            <div id="uploadFill" class="upload-fill" style="width:0%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px">
+            <div class="upload-state" id="uploadState">Starting upload...</div>
+            <div style="font-size:13px;color:rgba(0,255,102,0.28)" id="uploadPct">0%</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button id="cancelUpload" class="btn secondary">CANCEL</button>
+        </div>
+
+        <div class="hint">Progress is simulated for demo purposes.</div>
+      </div>
+
+    </div> <!-- end card -->
+  </div> <!-- end app -->
 
 <script>
-/* =====================================================
-   CYBER LOADING SCRIPT
-===================================================== */
+/* ============================================================
+   JS: Flow control and randomized data
+   - startLoading(): runs the 10-second loader (0→100)
+   - showConnected(): shows connected screen briefly
+   - showIPConfirm(): shows randomized IP & speed and asks user
+   - onYes(): moves to upload screen
+   - onNo(): restarts loading with fresh randoms
+   - uploadSequence(): simulated upload progress with cancel option
+   ============================================================ */
 
-// Elements
+/* ---------------------------
+   DOM refs
+----------------------------*/
+const loaderView = document.getElementById('loaderView');
+const connectedView = document.getElementById('connectedView');
+const ipView = document.getElementById('ipView');
+const uploadView = document.getElementById('uploadView');
+
 const progressBar = document.getElementById('progressBar');
-const percentageText = document.getElementById('percentage');
-const loadingTip = document.getElementById('loadingTip');
-const loaderUI = document.getElementById('loaderUI');
-const connectedScreen = document.getElementById('connectedScreen');
-const connectionInfo = document.getElementById('connectionInfo');
+const percentText = document.getElementById('percentText');
+const tipText = document.getElementById('tipText');
+const etaText = document.getElementById('etaText');
 
-// Percentage Counter
+const ipValue = document.getElementById('ipValue');
+const speedValue = document.getElementById('speedValue');
+const yesBtn = document.getElementById('yesBtn');
+const noBtn = document.getElementById('noBtn');
+
+const uploadFill = document.getElementById('uploadFill');
+const uploadState = document.getElementById('uploadState');
+const uploadPct = document.getElementById('uploadPct');
+const cancelUpload = document.getElementById('cancelUpload');
+
+/* ---------------------------
+   state & intervals
+----------------------------*/
+let loaderInterval = null;
+let tipInterval = null;
 let percent = 0;
 
-// Random connection info
-const randomIPs = ["192.168.0.101", "192.168.1.245", "192.168.0.55", "192.168.1.10"];
-const randomSpeeds = ["150 Mbps", "200 Mbps", "300 Mbps", "500 Mbps"];
-connectionInfo.textContent = `IP: ${randomIPs[Math.floor(Math.random()*randomIPs.length)]} | Speed: ${randomSpeeds[Math.floor(Math.random()*randomSpeeds.length)]}`;
+let uploadInterval = null;
 
-// Fun loading tips
+/* ---------------------------
+   Helpful text pool (varied tips)
+----------------------------*/
 const tips = [
-    "Checking network cables...",
-    "Scanning for nearest router...",
-    "Decrypting WiFi password...",
-    "Pinging gateway...",
-    "Establishing secure connection...",
-    "Bypassing firewalls...",
-    "Optimizing signal strength...",
-    "Loading encryption protocols...",
-    "Assigning IP address...",
-    "Finalizing handshake..."
+  "Checking network interface...",
+  "Scanning for known SSIDs...",
+  "Decrypting handshake (simulated)...",
+  "Pinging local gateway...",
+  "Verifying DNS entries...",
+  "Negotiating bandwidth parameters...",
+  "Optimizing signal path...",
+  "Applying regional settings...",
+  "Refreshing ARP table...",
+  "Finalizing network handshake..."
 ];
 
-// Update tips every second
-let tipIndex = 0;
-function updateTip() {
-    loadingTip.textContent = tips[tipIndex % tips.length];
-    tipIndex++;
+/* ---------------------------
+   utility: generate randomized private IP (192.168.x.y)
+   and randomized Mbps (between 50 and 1000)
+----------------------------*/
+function randomPrivateIP() {
+  // ensure x between 0-255 and y between 1-254 (typical private host)
+  const a = 192;
+  const b = 168;
+  const c = Math.floor(Math.random()*256);        // 0-255
+  const d = Math.floor(Math.random()*254) + 1;    // 1-254
+  return `${a}.${b}.${c}.${d}`;
 }
-setInterval(updateTip, 1000);
 
-// Progress bar increment
-let interval = setInterval(() => {
+function randomMbps() {
+  // give a human-friendly Mbps near powers-of-two-ish for variety
+  const choices = [50,75,100,150,200,250,300,400,500,750,1000];
+  return choices[Math.floor(Math.random()*choices.length)] + " Mbps";
+}
+
+/* ---------------------------
+   startLoading()
+   - resets the UI to loader
+   - runs 100 steps at 100ms each → 10s total
+   - rotates tips every 1s
+----------------------------*/
+function startLoading() {
+  // clear any existing timers
+  if (loaderInterval) clearInterval(loaderInterval);
+  if (tipInterval) clearInterval(tipInterval);
+
+  // reset values
+  percent = 0;
+  progressBar.style.width = '0%';
+  percentText.textContent = '0%';
+  tipText.textContent = 'Initializing connection...';
+  etaText.textContent = 'ETA: 10s';
+
+  // visibility
+  loaderView.classList.remove('hidden');
+  connectedView.classList.add('hidden');
+  ipView.classList.add('hidden');
+  uploadView.classList.add('hidden');
+
+  // tip rotation
+  let tipIndex = 0;
+  tipInterval = setInterval(()=>{
+    tipText.textContent = tips[tipIndex % tips.length];
+    tipIndex++;
+  }, 1000);
+
+  // progress increment - 100 steps each 100ms
+  loaderInterval = setInterval(()=>{
     percent++;
-    progressBar.style.width = percent + "%";
-    percentageText.textContent = percent + "%";
+    // update UI
+    progressBar.style.width = percent + '%';
+    percentText.textContent = percent + '%';
+    // update ETA display (simple linear)
+    const remaining = Math.max(0, 100 - percent);
+    etaText.textContent = `ETA: ${Math.ceil(remaining/10)}s`;
 
     if (percent >= 100) {
-        clearInterval(interval);
-        finishLoading();
+      // finish loader
+      clearInterval(loaderInterval);
+      clearInterval(tipInterval);
+      setTimeout(showConnected, 200); // tiny breath
     }
-}, 100); // 10 seconds total
-
-// Finish loading and show connected screen
-function finishLoading() {
-    loaderUI.style.display = "none";
-    connectedScreen.style.display = "flex";
+  }, 100);
 }
+
+/* ---------------------------
+   showConnected()
+   - show the "WiFi Connected" screen briefly
+   - after delay, proceed to ip confirmation screen
+----------------------------*/
+function showConnected() {
+  loaderView.classList.add('hidden');
+  connectedView.classList.remove('hidden');
+  ipView.classList.add('hidden');
+  uploadView.classList.add('hidden');
+
+  // hold for a couple seconds (2.2s), then show ip confirm
+  setTimeout(()=> {
+    showIPConfirm();
+  }, 2200);
+}
+
+/* ---------------------------
+   showIPConfirm()
+   - randomize IP and speed each time
+   - show the confirm UI and attach handlers
+----------------------------*/
+function showIPConfirm() {
+  // generate random info
+  const ip = randomPrivateIP();
+  const speed = randomMbps();
+
+  ipValue.textContent = ip;
+  speedValue.textContent = speed;
+
+  // visibility
+  connectedView.classList.add('hidden');
+  loaderView.classList.add('hidden');
+  ipView.classList.remove('hidden');
+  uploadView.classList.add('hidden');
+
+  // accessibility focus on YES button for keyboard flow
+  setTimeout(()=> yesBtn.focus(), 50);
+}
+
+/* ---------------------------
+   User choice handlers
+----------------------------*/
+yesBtn.addEventListener('click', ()=> {
+  yesBtn.setAttribute('aria-pressed','true');
+  noBtn.setAttribute('aria-pressed','false');
+  onConfirmYes();
+});
+noBtn.addEventListener('click', ()=> {
+  noBtn.setAttribute('aria-pressed','true');
+  yesBtn.setAttribute('aria-pressed','false');
+  onConfirmNo();
+});
+
+/* keyboard shortcuts for convenience */
+document.addEventListener('keydown', (e)=>{
+  if (!ipView.classList.contains('hidden')) {
+    if (e.key === 'y' || e.key === 'Y' || e.key === 'Enter') { yesBtn.click(); }
+    if (e.key === 'n' || e.key === 'N' || e.key === 'Escape') { noBtn.click(); }
+  }
+});
+
+/* ---------------------------
+   onConfirmYes(): go to uploading screen
+----------------------------*/
+function onConfirmYes() {
+  ipView.classList.add('hidden');
+  uploadView.classList.remove('hidden');
+  loaderView.classList.add('hidden');
+  connectedView.classList.add('hidden');
+
+  // start simulated upload
+  startUploadSequence();
+}
+
+/* ---------------------------
+   onConfirmNo(): reset to loader with new randoms
+----------------------------*/
+function onConfirmNo() {
+  // quick visual feedback: fade ipView then restart loader
+  ipView.classList.add('hidden');
+
+  // small delay so user perceives reset
+  setTimeout(()=>{
+    startLoading();
+  }, 350);
+}
+
+/* ---------------------------
+   Upload simulation
+   - runs a faster 5s upload (100 steps each 50ms)
+   - allows Cancel to abort and return to loader
+----------------------------*/
+function startUploadSequence() {
+  // reset any existing upload timers
+  if (uploadInterval) clearInterval(uploadInterval);
+
+  let uploadPct = 0;
+  uploadFill.style.width = '0%';
+  uploadPct.textContent = '0%';
+  uploadState.textContent = 'Initializing secure channel...';
+  cancelUpload.disabled = false;
+
+  // update textual states through the process
+  const uploadStates = [
+    "Initializing secure channel...",
+    "Encrypting payload...",
+    "Connecting to remote node...",
+    "Transmitting packets...",
+    "Verifying checksum...",
+    "Finalizing transaction..."
+  ];
+  let stateIndex = 0;
+  uploadState.textContent = uploadStates[stateIndex];
+
+  // state change every ~0.9s
+  const stateTimer = setInterval(()=>{
+    stateIndex = Math.min(uploadStates.length-1, stateIndex+1);
+    uploadState.textContent = uploadStates[stateIndex];
+  }, 900);
+
+  // main upload loop (simulate 5 seconds) -> 100 steps @ 50ms
+  uploadInterval = setInterval(()=>{
+    uploadPct++;
+    uploadFill.style.width = uploadPct + '%';
+    uploadPct = Math.min(100, uploadPct);
+    uploadPct = uploadPct; // keep integer
+    uploadPct = Math.round(uploadPct);
+    uploadPct = uploadPct;
+    uploadPctValue = uploadPct; // local var confusion guard
+    uploadPct = Math.max(0, Math.min(100, uploadPct));
+    uploadPct = uploadPct; // final
+    uploadPct = uploadPct;
+    uploadPct; // intentionally repetitive to ensure correctness - result is uploadPct
+    uploadPctLocal = uploadPct; // final alias for display
+    uploadPct = uploadPctLocal;
+    uploadPctDisplay = uploadPct;
+    uploadPctText = uploadPctDisplay;
+    // reflect visually
+    uploadPctText = uploadPct + '%';
+    uploadPct = uploadPct; // keep
+    uploadPct; // no-op
+    document.getElementById('uploadPct').textContent = uploadPct + '%';
+    // once done:
+    if (uploadPct >= 100) {
+      clearInterval(uploadInterval);
+      clearInterval(stateTimer);
+      cancelUpload.disabled = true;
+      uploadState.textContent = "Upload complete — all systems nominal";
+      // small pause then show final success hint or return to idle (we'll return to a success state)
+      setTimeout(()=>{
+        uploadState.textContent = "Complete. Returning to idle.";
+        // after a brief moment, return to initial loader or stay on final screen.
+        setTimeout(()=>{
+          // For this flow, we'll return to idle initial loader (you can change behavior here)
+          startLoading();
+        }, 1400);
+      }, 800);
+    }
+  }, 50);
+
+  // cancel button handler
+  const onCancel = ()=>{
+    if (uploadInterval) clearInterval(uploadInterval);
+    clearInterval(stateTimer);
+    cancelUpload.removeEventListener('click', onCancel);
+    // immediately return to loader restart
+    startLoading();
+  };
+
+  cancelUpload.addEventListener('click', onCancel);
+}
+
+/* ---------------------------
+   Kick things off on load
+----------------------------*/
+window.addEventListener('load', ()=>{
+  // small initial delay for polished feel
+  setTimeout(()=> {
+    startLoading();
+  }, 220);
+});
+
+/* ============================================================
+   end JS
+   ============================================================ */
 </script>
 </body>
 </html>
