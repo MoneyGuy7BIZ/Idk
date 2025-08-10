@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading...</title>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        background-color: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        color: #00ff66;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .progress-container {
+        width: 80%;
+        background-color: #111;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 15px #00ff66;
+    }
+    .progress-bar {
+        height: 20px;
+        background-color: #00ff66;
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+    .percentage {
+        margin-top: 15px;
+        font-size: 1.5rem;
+        text-shadow: 0 0 5px #00ff66;
+    }
+    .connected {
+        font-size: 2rem;
+        text-shadow: 0 0 10px #00ff66;
+        display: none;
+    }
+</style>
+</head>
+<body>
+    <div class="progress-container" id="loader">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="percentage" id="percentage">0%</div>
+    <div class="connected" id="connected">✅ WiFi Connected</div>
+
+    <script>
+        let percent = 0;
+        const progressBar = document.getElementById('progressBar');
+        const percentageText = document.getElementById('percentage');
+        const loader = document.getElementById('loader');
+        const connected = document.getElementById('connected');
+
+        let interval = setInterval(() => {
+            percent++;
+            progressBar.style.width = percent + "%";
+            percentageText.textContent = percent + "%";
+
+            if (percent >= 100) {
+                clearInterval(interval);
+                loader.style.display = "none";
+                percentageText.style.display = "none";
+                connected.style.display = "block";
+            }
+        }, 100); // 100ms * 100 = 10 seconds
+    </script>
+</body>
+</html>
