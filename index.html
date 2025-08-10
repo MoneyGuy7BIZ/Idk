@@ -3,70 +3,218 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loading...</title>
+<title>Cyber Loading Screen</title>
 <style>
-    body {
-        margin: 0;
-        height: 100vh;
-        background-color: #000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        color: #00ff66;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    .progress-container {
-        width: 80%;
-        background-color: #111;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 0 15px #00ff66;
-    }
-    .progress-bar {
-        height: 20px;
-        background-color: #00ff66;
-        width: 0%;
-        transition: width 0.1s linear;
-    }
-    .percentage {
-        margin-top: 15px;
-        font-size: 1.5rem;
-        text-shadow: 0 0 5px #00ff66;
-    }
-    .connected {
-        font-size: 2rem;
-        text-shadow: 0 0 10px #00ff66;
-        display: none;
-    }
+/* ----------------------------
+   BASE STYLES
+----------------------------- */
+body {
+    margin: 0;
+    height: 100vh;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+}
+
+/* ----------------------------
+   COLORS & THEME
+----------------------------- */
+:root {
+    --neon-green: #00ff66;
+    --dark-bg: #000;
+    --bar-bg: #111;
+}
+
+/* ----------------------------
+   PROGRESS BAR CONTAINER
+----------------------------- */
+.progress-container {
+    width: 80%;
+    background-color: var(--bar-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 15px var(--neon-green);
+    margin-top: 20px;
+}
+
+/* ----------------------------
+   PROGRESS BAR FILL
+----------------------------- */
+.progress-bar {
+    height: 20px;
+    background-color: var(--neon-green);
+    width: 0%;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 10px var(--neon-green);
+}
+
+/* ----------------------------
+   PERCENTAGE TEXT
+----------------------------- */
+.percentage {
+    margin-top: 15px;
+    font-size: 1.5rem;
+    color: var(--neon-green);
+    text-shadow: 0 0 5px var(--neon-green);
+}
+
+/* ----------------------------
+   LOADING CIRCLE
+----------------------------- */
+.loader-circle {
+    border: 6px solid #222;
+    border-top: 6px solid var(--neon-green);
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    animation: spin 1s linear infinite;
+    margin-top: 20px;
+    box-shadow: 0 0 10px var(--neon-green);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ----------------------------
+   LOADING TIPS TEXT
+----------------------------- */
+.tips {
+    margin-top: 20px;
+    font-size: 1rem;
+    color: var(--neon-green);
+    opacity: 0.8;
+    font-style: italic;
+    text-shadow: 0 0 5px var(--neon-green);
+}
+
+/* ----------------------------
+   CONNECTED SCREEN
+----------------------------- */
+.connected {
+    font-size: 2.5rem;
+    color: var(--neon-green);
+    text-shadow: 0 0 15px var(--neon-green), 0 0 30px var(--neon-green);
+    display: none;
+    animation: fadeIn 1.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* ----------------------------
+   BACKGROUND ANIMATION
+----------------------------- */
+.bg-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0,255,102,0.15) 0%, transparent 70%);
+    animation: pulse 3s infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.1); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 0.4; }
+}
+
+/* ----------------------------
+   HIDDEN CLASS FOR TRANSITIONS
+----------------------------- */
+.hidden {
+    display: none;
+}
 </style>
 </head>
 <body>
-    <div class="progress-container" id="loader">
-        <div class="progress-bar" id="progressBar"></div>
+    <!-- Background Glow Effect -->
+    <div class="bg-animation"></div>
+
+    <!-- Loader UI -->
+    <div id="loaderUI">
+        <div class="loader-circle"></div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="percentage" id="percentage">0%</div>
+        <div class="tips" id="loadingTip">Initializing connection...</div>
     </div>
-    <div class="percentage" id="percentage">0%</div>
-    <div class="connected" id="connected">✅ WiFi Connected</div>
 
-    <script>
-        let percent = 0;
-        const progressBar = document.getElementById('progressBar');
-        const percentageText = document.getElementById('percentage');
-        const loader = document.getElementById('loader');
-        const connected = document.getElementById('connected');
+    <!-- Connected Screen -->
+    <div class="connected" id="connectedScreen">✅ WiFi Connected</div>
 
-        let interval = setInterval(() => {
-            percent++;
-            progressBar.style.width = percent + "%";
-            percentageText.textContent = percent + "%";
+<script>
+/* =====================================================
+   CYBER LOADING SCRIPT
+   Features:
+   - Progress bar 0% → 100% in 10 seconds
+   - Rotating loading circle
+   - Random tips/messages displayed while loading
+   - Smooth transition to connected screen
+===================================================== */
 
-            if (percent >= 100) {
-                clearInterval(interval);
-                loader.style.display = "none";
-                percentageText.style.display = "none";
-                connected.style.display = "block";
-            }
-        }, 100); // 100ms * 100 = 10 seconds
-    </script>
+// Elements
+const progressBar = document.getElementById('progressBar');
+const percentageText = document.getElementById('percentage');
+const loadingTip = document.getElementById('loadingTip');
+const loaderUI = document.getElementById('loaderUI');
+const connectedScreen = document.getElementById('connectedScreen');
+
+// Percentage Counter
+let percent = 0;
+
+// List of fun loading tips
+const tips = [
+    "Checking network cables...",
+    "Scanning for nearest router...",
+    "Decrypting WiFi password...",
+    "Pinging gateway...",
+    "Establishing secure connection...",
+    "Bypassing firewalls...",
+    "Optimizing signal strength...",
+    "Loading encryption protocols...",
+    "Assigning IP address...",
+    "Finalizing handshake..."
+];
+
+// Update tips every second
+let tipIndex = 0;
+function updateTip() {
+    loadingTip.textContent = tips[tipIndex % tips.length];
+    tipIndex++;
+}
+
+// Interval for tips
+setInterval(updateTip, 1000);
+
+// Progress bar interval
+let interval = setInterval(() => {
+    percent++;
+    progressBar.style.width = percent + "%";
+    percentageText.textContent = percent + "%";
+
+    if (percent >= 100) {
+        clearInterval(interval);
+        finishLoading();
+    }
+}, 100); // 100ms * 100 = 10 seconds
+
+// Finish loading and show connected screen
+function finishLoading() {
+    loaderUI.classList.add('hidden');
+    connectedScreen.style.display = "block";
+}
+</script>
 </body>
 </html>
