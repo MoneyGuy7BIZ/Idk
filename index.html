@@ -5,13 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cyber Loading Screen</title>
 <style>
-/* ----------------------------
-   BASE STYLES
------------------------------ */
+/* ==============================================
+   BASE THEME & VARIABLES
+================================================= */
+:root {
+    --neon-green: #00ff66;
+    --dark-bg: #000;
+    --bar-bg: #111;
+    --glow: 0 0 15px var(--neon-green), 0 0 30px var(--neon-green);
+}
+
 body {
     margin: 0;
     height: 100vh;
-    background-color: #000;
+    background-color: var(--dark-bg);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -20,30 +27,74 @@ body {
     overflow: hidden;
 }
 
-/* ----------------------------
-   COLORS & THEME
------------------------------ */
-:root {
-    --neon-green: #00ff66;
-    --dark-bg: #000;
-    --bar-bg: #111;
+/* ==============================================
+   BACKGROUND GRID ANIMATION
+================================================= */
+.bg-grid {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 255, 102, 0.1) 0px,
+        rgba(0, 255, 102, 0.1) 1px,
+        transparent 1px,
+        transparent 20px
+    ),
+    repeating-linear-gradient(
+        90deg,
+        rgba(0, 255, 102, 0.1) 0px,
+        rgba(0, 255, 102, 0.1) 1px,
+        transparent 1px,
+        transparent 20px
+    );
+    animation: moveGrid 10s linear infinite;
+    z-index: 0;
+}
+@keyframes moveGrid {
+    from { background-position: 0 0, 0 0; }
+    to { background-position: 40px 40px, 40px 40px; }
 }
 
-/* ----------------------------
-   PROGRESS BAR CONTAINER
------------------------------ */
+/* ==============================================
+   LOADER CONTAINER
+================================================= */
+#loaderUI {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Circular loader */
+.loader-circle {
+    border: 6px solid #222;
+    border-top: 6px solid var(--neon-green);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1s linear infinite;
+    margin-top: 20px;
+    box-shadow: 0 0 10px var(--neon-green);
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Progress bar container */
 .progress-container {
     width: 80%;
     background-color: var(--bar-bg);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 0 15px var(--neon-green);
+    box-shadow: var(--glow);
     margin-top: 20px;
 }
 
-/* ----------------------------
-   PROGRESS BAR FILL
------------------------------ */
+/* Progress bar */
 .progress-bar {
     height: 20px;
     background-color: var(--neon-green);
@@ -52,9 +103,7 @@ body {
     box-shadow: 0 0 10px var(--neon-green);
 }
 
-/* ----------------------------
-   PERCENTAGE TEXT
------------------------------ */
+/* Percentage text */
 .percentage {
     margin-top: 15px;
     font-size: 1.5rem;
@@ -62,28 +111,7 @@ body {
     text-shadow: 0 0 5px var(--neon-green);
 }
 
-/* ----------------------------
-   LOADING CIRCLE
------------------------------ */
-.loader-circle {
-    border: 6px solid #222;
-    border-top: 6px solid var(--neon-green);
-    border-radius: 50%;
-    width: 70px;
-    height: 70px;
-    animation: spin 1s linear infinite;
-    margin-top: 20px;
-    box-shadow: 0 0 10px var(--neon-green);
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* ----------------------------
-   LOADING TIPS TEXT
------------------------------ */
+/* Loading tips */
 .tips {
     margin-top: 20px;
     font-size: 1rem;
@@ -93,53 +121,85 @@ body {
     text-shadow: 0 0 5px var(--neon-green);
 }
 
-/* ----------------------------
+/* ==============================================
    CONNECTED SCREEN
------------------------------ */
-.connected {
-    font-size: 2.5rem;
-    color: var(--neon-green);
-    text-shadow: 0 0 15px var(--neon-green), 0 0 30px var(--neon-green);
+================================================= */
+#connectedScreen {
+    position: relative;
+    z-index: 1;
     display: none;
+    flex-direction: column;
+    align-items: center;
     animation: fadeIn 1.5s ease-in forwards;
 }
-
 @keyframes fadeIn {
     0% { opacity: 0; transform: scale(0.95); }
     100% { opacity: 1; transform: scale(1); }
 }
 
-/* ----------------------------
-   BACKGROUND ANIMATION
------------------------------ */
-.bg-animation {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(0,255,102,0.15) 0%, transparent 70%);
-    animation: pulse 3s infinite;
-    pointer-events: none;
+/* Pulsing checkmark */
+.checkmark {
+    font-size: 4rem;
+    color: var(--neon-green);
+    animation: pulse 1.5s infinite;
+    text-shadow: var(--glow);
 }
-
 @keyframes pulse {
-    0% { transform: scale(1); opacity: 0.4; }
-    50% { transform: scale(1.1); opacity: 0.6; }
-    100% { transform: scale(1); opacity: 0.4; }
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-/* ----------------------------
-   HIDDEN CLASS FOR TRANSITIONS
------------------------------ */
-.hidden {
-    display: none;
+/* WiFi bars animation */
+.wifi-bars {
+    display: flex;
+    align-items: flex-end;
+    margin-top: 15px;
+}
+.wifi-bars span {
+    display: block;
+    width: 8px;
+    margin: 0 3px;
+    background: var(--neon-green);
+    animation: wifiPulse 1s ease-in-out infinite;
+    box-shadow: var(--glow);
+}
+.wifi-bars span:nth-child(1) { height: 10px; animation-delay: 0s; }
+.wifi-bars span:nth-child(2) { height: 18px; animation-delay: 0.2s; }
+.wifi-bars span:nth-child(3) { height: 26px; animation-delay: 0.4s; }
+.wifi-bars span:nth-child(4) { height: 34px; animation-delay: 0.6s; }
+
+@keyframes wifiPulse {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.3); }
+}
+
+/* Connection text flicker */
+.connected-text {
+    font-size: 2rem;
+    color: var(--neon-green);
+    margin-top: 15px;
+    text-shadow: var(--glow);
+    animation: flicker 2s infinite;
+}
+@keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 22%, 24%, 55% { opacity: 0.4; }
+}
+
+/* Extra connection details */
+.connection-info {
+    font-size: 1rem;
+    color: var(--neon-green);
+    margin-top: 10px;
+    opacity: 0.8;
+    text-shadow: 0 0 5px var(--neon-green);
 }
 </style>
 </head>
 <body>
-    <!-- Background Glow Effect -->
-    <div class="bg-animation"></div>
+    <!-- Background grid -->
+    <div class="bg-grid"></div>
 
     <!-- Loader UI -->
     <div id="loaderUI">
@@ -152,16 +212,18 @@ body {
     </div>
 
     <!-- Connected Screen -->
-    <div class="connected" id="connectedScreen">✅ WiFi Connected</div>
+    <div id="connectedScreen">
+        <div class="checkmark">✅</div>
+        <div class="wifi-bars">
+            <span></span><span></span><span></span><span></span>
+        </div>
+        <div class="connected-text">WiFi Connected</div>
+        <div class="connection-info" id="connectionInfo">IP: 192.168.0.1 | Speed: 150 Mbps</div>
+    </div>
 
 <script>
 /* =====================================================
    CYBER LOADING SCRIPT
-   Features:
-   - Progress bar 0% → 100% in 10 seconds
-   - Rotating loading circle
-   - Random tips/messages displayed while loading
-   - Smooth transition to connected screen
 ===================================================== */
 
 // Elements
@@ -170,11 +232,17 @@ const percentageText = document.getElementById('percentage');
 const loadingTip = document.getElementById('loadingTip');
 const loaderUI = document.getElementById('loaderUI');
 const connectedScreen = document.getElementById('connectedScreen');
+const connectionInfo = document.getElementById('connectionInfo');
 
 // Percentage Counter
 let percent = 0;
 
-// List of fun loading tips
+// Random connection info
+const randomIPs = ["192.168.0.101", "192.168.1.245", "192.168.0.55", "192.168.1.10"];
+const randomSpeeds = ["150 Mbps", "200 Mbps", "300 Mbps", "500 Mbps"];
+connectionInfo.textContent = `IP: ${randomIPs[Math.floor(Math.random()*randomIPs.length)]} | Speed: ${randomSpeeds[Math.floor(Math.random()*randomSpeeds.length)]}`;
+
+// Fun loading tips
 const tips = [
     "Checking network cables...",
     "Scanning for nearest router...",
@@ -194,11 +262,9 @@ function updateTip() {
     loadingTip.textContent = tips[tipIndex % tips.length];
     tipIndex++;
 }
-
-// Interval for tips
 setInterval(updateTip, 1000);
 
-// Progress bar interval
+// Progress bar increment
 let interval = setInterval(() => {
     percent++;
     progressBar.style.width = percent + "%";
@@ -208,12 +274,12 @@ let interval = setInterval(() => {
         clearInterval(interval);
         finishLoading();
     }
-}, 100); // 100ms * 100 = 10 seconds
+}, 100); // 10 seconds total
 
 // Finish loading and show connected screen
 function finishLoading() {
-    loaderUI.classList.add('hidden');
-    connectedScreen.style.display = "block";
+    loaderUI.style.display = "none";
+    connectedScreen.style.display = "flex";
 }
 </script>
 </body>
